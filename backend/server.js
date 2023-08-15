@@ -11,20 +11,12 @@ const sequelize = new Sequelize('frist_project', 'root', 'W@2915djkq#', {
 
 // Define the Product model
 const Product = sequelize.define('Product', {
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   price: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  desc: {
+  name: {
     type: DataTypes.STRING,
-    allowNull: false,
-  },
-  stock: {
-    type: DataTypes.FLOAT,
     allowNull: false,
   },
 });
@@ -42,11 +34,11 @@ sequelize.sync()
 const app = express();
 app.use(express.json());
 app.use(cors())
-// Create a new product
+// Create a new product  
 app.post('/products', (req, res) => {
-  const { name, price, desc, stock } = req.body;
-  console.log(name, price, desc, stock)
-     Product.create({ name, price,desc,stock })
+  const {price, name } = req.body;
+  console.log(price, name)
+     Product.create({price, name})
     .then((product) => {
       res.status(201).json(product);
     })
@@ -65,21 +57,19 @@ app.get('/products', (req, res) => {
       res.status(500).json({ error: 'Error fetching products' });
     });
 });
-app.patch('/update-stock', async (req, res) => {
-  const { id, stock } = req.body;
+app.delete('/delete/:id', async (req, res) => {
+  const id = req.params.id;
   try {
     const product = await Product.findByPk(id);
-    if (!product) {
-      res.send('no product find')
+    if (product) {
+      // Delete the Product
+      await product.destroy();
+      console.log('User deleted successfully');
+    } else {
+      console.log('User not found');
     }
-
-    product.stock = stock;
-    await product.save();
-    res.send("stock is updated successfully")
-    // console.log('Stock updated successfully');
   } catch (error) {
-    res.send(error)
-    // console.error('Error updating stock:', error);
+    console.error('Error deleting user:', error);
   }
 })
 
